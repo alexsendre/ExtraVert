@@ -44,8 +44,11 @@ List<Plant> plants = new List<Plant>()
     }
 };
 
+Random random = new Random();
+
 string greeting = $"Welcome to ExtraVert, your floral one-stop shop.";
 Console.WriteLine(greeting);
+
 
 string choice = null;
 
@@ -55,9 +58,10 @@ while (choice != "0")
 How can we help you today?
         0. Exit
         1. Display All Plants
-        2. Post a Plant to be Adopted
+        2. Post a Plant
         3. Adopt a Plant
-        4. Delist a Plant");
+        4. Delist a Plant
+        5. Plant of the Day");
     choice = Console.ReadLine();
 
     if (choice == "0")
@@ -68,13 +72,13 @@ How can we help you today?
     {
         try
         {
+            Console.Clear();
             Console.WriteLine("\nAll plants:");
             ListPlants();
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
-            Console.WriteLine("There was an error.");
+            Console.WriteLine("There was an error:", ex.Message);
         }
 
     }
@@ -82,6 +86,7 @@ How can we help you today?
     {
         try
         {
+            Console.Clear();
             PostPlant(plants);
         }
         catch (Exception ex)
@@ -93,24 +98,36 @@ How can we help you today?
     {
         try
         {
+            Console.Clear();
             AdoptPlant(plants);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
-            Console.WriteLine("There was an error.");
+            Console.WriteLine("There was an error:", ex.Message);
         }
     }
     else if (choice == "4")
     {
         try
         {
+            Console.Clear();
             DelistPlant(plants);
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
-            Console.WriteLine("There was an error.");
+            Console.WriteLine("There was an error:", ex.Message);
+        }
+    }
+    else if (choice == "5")
+    {
+        try
+        {
+            Console.Clear();
+            DailyPlant();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("There was an error:", ex.Message);
         }
     }
 }
@@ -186,7 +203,7 @@ void AdoptPlant(List<Plant> plants)
                 plants[choiceIndex - 1].Sold = true;
                 Console.WriteLine($"Nice! You adopted {plants[choiceIndex - 1].Species}!");
             }
-            else // if you can succeed ^ you can also fail v .. just in case
+            else // if you can succeed ^ you can also fail .. just in case
             {
                 Console.WriteLine($"Invalid choice, {plants[choiceIndex - 1].Species} is not available.");
             }
@@ -200,6 +217,8 @@ void AdoptPlant(List<Plant> plants)
 
 void DelistPlant(List<Plant> plants)
 {
+    Console.WriteLine("Choose a plant to de-list:");
+
     for (int i = 0;i < plants.Count;i++)
     {
         Console.WriteLine($"{i + 1}. {plants[i].Species}");
@@ -208,10 +227,40 @@ void DelistPlant(List<Plant> plants)
     if (int.TryParse(Console.ReadLine(), out int choiceIndex))
     {
         plants.RemoveAt(choiceIndex - 1);
-        Console.WriteLine($"Success!");
+        Console.WriteLine("Successfully de-listed.");
     }
     else
     {
         Console.WriteLine("There was an error.");
     }    
+
+}
+
+void DailyPlant()
+{
+    if (plants.All(plant => plant.Sold))
+    {
+        Console.WriteLine("No plants available! Check back soon");
+    }
+    else
+    {
+        int randomPlantIndex;
+
+        do
+        {
+            randomPlantIndex = random.Next(0, plants.Count - 1);
+        } while (plants[randomPlantIndex].Sold);
+
+        var species = plants[randomPlantIndex].Species;
+        var location = plants[randomPlantIndex].City;
+        var lightNeeds = plants[randomPlantIndex].LightNeeds;
+        var price = plants[randomPlantIndex].AskingPrice;
+
+        Console.WriteLine(@$"Plant of the Day: {species}!
+        Located in {location}, with a required-light score of {lightNeeds},
+        the {species} is ExtraVert's Plant of the Day!
+        Buy now for {price}!");
+    }
+
+
 }
