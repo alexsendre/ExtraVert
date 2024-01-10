@@ -61,7 +61,8 @@ How can we help you today?
         2. Post a Plant
         3. Adopt a Plant
         4. Delist a Plant
-        5. Plant of the Day");
+        5. Plant of the Day
+        6. Search by Light Needed");
     choice = Console.ReadLine();
 
     if (choice == "0")
@@ -124,6 +125,18 @@ How can we help you today?
         {
             Console.Clear();
             DailyPlant();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("There was an error:", ex.Message);
+        }
+    }
+    else if (choice == "6")
+    {
+        try
+        {
+            Console.Clear();
+            SearchByLightNeeds(plants);
         }
         catch (Exception ex)
         {
@@ -263,4 +276,34 @@ void DailyPlant()
     }
 
 
+}
+
+void SearchByLightNeeds(List<Plant> plants)
+{
+    Console.WriteLine("Enter a maximum light-needs number (1 - 5):");
+    try
+    {
+        if (int.TryParse(Console.ReadLine(), out int choiceIndex))
+        {
+            foreach (Plant plant in plants)
+            {
+                if (plant.LightNeeds <= choiceIndex)
+                {
+                    Console.WriteLine($"{plant.Species} has a light-needs number of {plant.LightNeeds}");
+                }
+            }
+        }
+    }
+    catch (FormatException ex)
+    {
+        Console.WriteLine("Please only enter number between 1-5");
+    }
+    catch (ArgumentOutOfRangeException ex)
+    {
+        Console.WriteLine("Please stay between numbers 1-5");
+    }
+    catch(Exception ex)
+    {
+        Console.WriteLine("There was an error:", ex.Message);
+    }
 }
