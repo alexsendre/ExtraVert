@@ -1,4 +1,5 @@
 ﻿using ExtraVert;
+using Microsoft.VisualBasic;
 
 List<Plant> plants = new List<Plant>()
 {
@@ -10,7 +11,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 20.00M,
         City = "Lebanon",
         Zip = 37087,
-        Sold = true
+        Sold = true,
+        AvailableUntil = new DateTime(2024, 1, 7)
     },
     new Plant()
     {
@@ -20,7 +22,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 33.99M,
         City = "Nashville",
         Zip = 38389,
-        Sold = false
+        Sold = true,
+        AvailableUntil = new DateTime(2024, 1, 8)
     },
     new Plant()
     {
@@ -30,7 +33,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 18.47M,
         City = "Texas",
         Zip = 47872,
-        Sold = false
+        Sold = false,
+        AvailableUntil = new DateTime(2023, 10, 22)
     },
     new Plant()
     {
@@ -40,7 +44,8 @@ List<Plant> plants = new List<Plant>()
         AskingPrice = 82.38M,
         City = "Dubai",
         Zip = 27983,
-        Sold = false
+        Sold = false,
+        AvailableUntil = DateTime.Now
     }
 };
 
@@ -149,7 +154,7 @@ void ListPlants()
 {
     for (int i = 0; i < plants.Count; i++)
     {
-        Console.WriteLine($"{i + 1}. A {plants[i].Species} in {plants[i].City} {(plants[i].Sold ? "was sold" : "is available")} for {plants[i].AskingPrice} dollars");
+        Console.WriteLine($"{i + 1}. A {plants[i].Species} in {plants[i].City} {(plants[i].Sold ? "was sold" : $"is available until {plants[i].AvailableUntil.Date}")} for {plants[i].AskingPrice} dollars");
     }
 }
 
@@ -182,6 +187,11 @@ void PostPlant(List<Plant> plants)
     int zipCode = Convert.ToInt32(Console.ReadLine());
     createdPlant.Zip = zipCode;
 
+    Console.WriteLine("Enter when your listing will expire: MM/DD/YYYY");
+    var userInput = Console.ReadLine();
+    DateTime date = ConvertToDate(userInput);
+    createdPlant.AvailableUntil = date.Date;
+
     // Ensuring the plant doesn't get added as sold 
     createdPlant.Sold = false;
 
@@ -191,7 +201,9 @@ void PostPlant(List<Plant> plants)
 
 void AdoptPlant(List<Plant> plants)
 {
-    if (plants.All(plant => plant.Sold)) // if all plants are sold, display none available
+    var availability = plants.Where(plant => plant.AvailableUntil <= DateTime.Now);
+
+    if (plants.All(plant => plant.Sold)) // if all plants are sold & not available, display none available
     {
         Console.WriteLine("There are no available plants yet. Come back later!");
         return;
@@ -201,7 +213,7 @@ void AdoptPlant(List<Plant> plants)
         Console.WriteLine("\nAvailable plants:");
         for (int i = 0; i < plants.Count; i++)
         {
-            if (!plants[i].Sold)
+            if (!plants[i].Sold && plants[i].AvailableUntil <= DateTime.Now) 
             {
                 Console.WriteLine($"{i + 1}. {plants[i].Species}");
             }  
@@ -306,4 +318,11 @@ void SearchByLightNeeds(List<Plant> plants)
     {
         Console.WriteLine("There was an error:", ex.Message);
     }
+}
+
+static DateTime ConvertToDate(string input) // function to parse the string response into a valid datetime format
+{
+    string[] format = { "MM/dd/yyyy" };
+    DateTime parsedDateTime = DateTime.ParseExact(input, format, null, System.Globalization.DateTimeStyles.None);
+    return parsedDateTime;
 }
