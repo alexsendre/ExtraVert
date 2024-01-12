@@ -67,7 +67,8 @@ How can we help you today?
         3. Adopt a Plant
         4. Delist a Plant
         5. Plant of the Day
-        6. Search by Light Needed");
+        6. Search by Light Needed
+        7. View App Stats");
     choice = Console.ReadLine();
 
     if (choice == "0")
@@ -148,6 +149,18 @@ How can we help you today?
             Console.WriteLine("There was an error:", ex.Message);
         }
     }
+    else if (choice == "7")
+    {
+        try
+        {
+            Console.Clear();
+            ViewStats();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("There was an error: ", ex.Message);
+        }
+    }
 }
 
 void ListPlants()
@@ -188,9 +201,16 @@ void PostPlant(List<Plant> plants)
     createdPlant.Zip = zipCode;
 
     Console.WriteLine("Enter when your listing will expire: MM/DD/YYYY");
-    var userInput = Console.ReadLine();
-    DateTime date = ConvertToDate(userInput);
-    createdPlant.AvailableUntil = date.Date;
+    try
+    {
+        var userInput = Console.ReadLine();
+        DateTime date = ConvertToDate(userInput);
+        createdPlant.AvailableUntil = date.Date;
+    }
+    catch (FormatException ex)
+    {
+        Console.WriteLine("Invalid format, try again: ", ex.Message);
+    }
 
     // Ensuring the plant doesn't get added as sold 
     createdPlant.Sold = false;
@@ -201,7 +221,7 @@ void PostPlant(List<Plant> plants)
 
 void AdoptPlant(List<Plant> plants)
 {
-    var availability = plants.Where(plant => plant.AvailableUntil <= DateTime.Now);
+//    var availability = plants.Where(plant => plant.AvailableUntil <= DateTime.Now);
 
     if (plants.All(plant => plant.Sold)) // if all plants are sold & not available, display none available
     {
@@ -325,4 +345,66 @@ static DateTime ConvertToDate(string input) // function to parse the string resp
     string[] format = { "MM/dd/yyyy" };
     DateTime parsedDateTime = DateTime.ParseExact(input, format, null, System.Globalization.DateTimeStyles.None);
     return parsedDateTime;
+}
+
+void ViewStats()
+{
+    // lowest priced plant
+    decimal lowestPrice = plants.Min(plants => plants.AskingPrice);
+    foreach (Plant plant in plants)
+    {
+        if (plant.AskingPrice == lowestPrice)
+        {
+            Console.WriteLine($"The lowest priced plant we have is the {plant.Species}, with an asking price of {plant.AskingPrice}");
+        }
+    }
+
+    // number of plants available
+    Console.WriteLine("\nOur available plants:");
+    var plantsAvailable = plants.Any(plant => !plant.Sold);
+    foreach (Plant plant in plants)
+    {
+        if (plantsAvailable)
+        {
+            Console.WriteLine($"{plant.Species}");
+        }
+    }    
+
+    // name of plant with highest light needs
+    Console.WriteLine("\nName of plants with most high light needs:");
+    var highestLightNeeds = plants.Max(plant => plant.LightNeeds);
+    foreach (Plant p in plants)
+    {
+        if (p.LightNeeds == highestLightNeeds)
+        {
+            Console.WriteLine($"{p.Species}, with a score of {p.LightNeeds}");
+        }
+    }
+
+    // average light needs
+    Console.WriteLine("\nAverage light needs:");
+    double averageLight = plants.Average(plant => plant.LightNeeds);
+    Console.WriteLine($"{averageLight:F}");
+
+    // percentage of plants adopted
+    int totalPlants = plants.Count();
+    int adoptedPlants = plants.Count(p => p.Sold);
+    double adoptionPercentage = (double)adoptedPlants / totalPlants * 100;
+    Console.WriteLine("\nPercentage of Adopted Plants:");
+    Console.WriteLine($"{adoptionPercentage}%!");
+
+}
+
+string PlantDetails(Plant plant)
+{
+    string plantString = @$"
+    Species: {plant.Species}
+    Light Needs: {plant.LightNeeds}
+    Price: {plant.AskingPrice}
+    City: {plant.City}
+    Zip: {plant.Zip}
+    Availablity: {(plant.Sold ? "Sold" : "Available!")}
+    Expiration: {plant.AvailableUntil.ToShortDateString}";
+
+    return plantString;
 }
